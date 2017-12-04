@@ -351,7 +351,7 @@ export default {
 }
 ```
 
-The `done` method receives the final state of program when the runtime dies, giving us our last chance to stop all active subscriptions by returning an optional effect. This end-of-life effect does not receive the `dispatch` method, which is why `cancel` takes no arguments.
+The `done` method receives the final state of program when the runtime dies, giving us our last chance to stop all active subscriptions.
 
 We can make the counter example fully safe by leveraging this new `done` method.
 
@@ -394,7 +394,7 @@ export default {
   done (state) {
     // we don't need state in this example
     // but we often store cancel effects in the state
-    return cancel
+    cancel()
   }
 }
 ```
@@ -765,7 +765,7 @@ export function everyTime (milliseconds, tagger) {
 
 In Elm, the [same subscription](http://package.elm-lang.org/packages/elm-lang/core/latest/Time#every) uses [effect managers](https://github.com/elm-lang/core/blob/b06aa4421f9016c820576eb6a38174b6137fe052/src/Time.elm#L164-L243) and requires help from the [low-level Elm runtime](https://github.com/elm-lang/core/blob/b06aa4421f9016c820576eb6a38174b6137fe052/src/Native/Time.js#L10) to work. Elm's solution fits its language. The Raj solution fits JavaScript.
 
-Expect Elm to development into a language that makes Raj obsolete as it solves the harder problems of client application development. Until then Raj brings Elm's great architectural patterns to you today.
+Expect Elm to develop into a language that makes Raj obsolete as it solves the harder problems of client application development. Until then Raj brings Elm's great architectural patterns to you today.
 
 ## 7. Game Over
 Holy crap! You made it to the end. That is impressive. I hope this has prepared you to build an application with Raj. Sincerely, thank you for reading.
