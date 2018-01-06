@@ -725,9 +725,9 @@ export default {
 }
 ```
 
-Again we use the same strategy of having the counter provide a method which the parent can call. here after every counter `update` the parent can check if the counter is too high and act appropriately. Having the same communication pattern work for both parent-to-child and child-to-parent is nice.
+Again we use the same strategy of having the counter provide a method which the parent can call. Here after every counter `update` the parent can check if the counter is too high and act appropriately. Having the same communication pattern work for both parent-to-child and child-to-parent is nice.
 
-Composition is an art. Raj gives you the freedom to be creative with how you fit these pieces together. When you do put a program into the runtime it does have to follow the program pattern but subprograms glued together to best fit your application.
+Composition is an art. Raj gives you the freedom to be creative with how you fit these pieces together. When you do put a program into the runtime it does have to follow the program pattern but subprograms can glue together to best fit your application.
 
 The `raj-compose` library has recommended composition utilities worth getting familiar with. If your application goes Single-Page Application (SPA) check out the ecosystem [`raj-spa`](https://github.com/andrejewski/raj-spa) program that uses `raj-compose` and the composition patterns above.
 
