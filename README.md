@@ -703,7 +703,7 @@ export default {
         counterEffect
       ] = counter.update(message.data, state.counterState)
       const newState = {...state, counterState: newCounterState}
-      if (isCountHigh(newState)) {
+      if (isCountHigh(newCounterState)) {
         // TODO: do something because the count is too dang high
       }
       return [newState, mapEffect(counterEffect, counterMessage)]
