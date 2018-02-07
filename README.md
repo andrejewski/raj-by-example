@@ -6,6 +6,15 @@ This is the complement to [Why Raj](https://jew.ski/why-raj/), which offers a mu
 
 Written for reading in order, we gradually build up Raj programs with libraries from the [Raj ecosystem](https://github.com/andrejewski/raj#ecosystem).
 
+## Contents
+
+1. [The Atom](#1-the-atom): Basic program structure
+1. [Mixed Signals](#2-mixed-signals): Explaining messages
+1. [Real Work](#3-real-work): Performing side-effects
+1. [Big Picture](#4-big-picture): Program composition
+1. [Prove It](#5-prove-it): Testing programs
+1. [Elm Street](#6-elm-street): Comparing with Elm
+
 ## 1. The Atom
 In Raj, the atomic unit is a program. Every Raj application is a program no matter the complexity. The program consists of three parts: `init`, `update`, and `view`. The smallest valid program is:
 
@@ -738,7 +747,90 @@ Testing `init` is a deep equal equality check. Testing `update` is constructing 
 
 Giving up side-effects to the runtime also means the rest of your code can be synchronous. Most business logic you write will be input-output, testable with unit tests which are easier to reason about and much faster to run than their asynchronous counterparts.
 
-The pinnacle byproduct of this highly testable architecture is the ecosystem [`raj-web-debugger`](https://github.com/andrejewski/raj-web-debugger). Leveraging the program pattern, we get a time traveling debugger for free. We record every state in our application and pause, play, rewind, and fast-forward them at will while developing. Time travel debugging is a useful tool and Raj brings it to your programs.
+### 5.1. Debugging
+Raj has a terrific debugging experience due to how small it is. Application stack traces are almost entirely of code belonging to the application. Coming from frameworks where the stack traces can easily be hundreds of functions deep, all irrelevant to the problem at hand, the signal to noise ratio is amazing stepping through a Raj program.
+
+Leveraging composition patterns we also can build reusable and powerful debugging utilities.
+
+A question newcomers to Raj ask is, "How can I get access to the current state?" This is a fair question because other state-management solutions offer those APIs. The reason Raj does not is because it is an anti-pattern to avoid in everything but development. The reason for this is contract boundaries between programs. It would be too easy for a programmer to mistakenly make assumptions about the running program from the outside, relying on specifics of the app state that may change over time. Thus Raj does not offer that foot-gun, but you can add it at your own risk.
+
+```js
+function tapProgram (program, onChange) {
+  return {
+    ...program,
+    view (model, dispatch) {
+      onChange(model)
+      return program.view(model, dispatch)
+    }
+  }
+}
+```
+
+This `tapProgram` is a high-order-program (HOP), a function which accepts a Raj program as input and returns a Raj program. Anytime the program's state changes, we call `onChange()` with the new state. Using this HOP, we could for example have the current program state set on `window.app` via:
+
+```js
+import { tapProgram } from './above-snippet'
+import { myProgram } from './my-app'
+import { program } from 'raj/runtime'
+
+const newProgram = tapProgram(myProgram, state => {
+  window.app = state
+})
+
+program(newProgram)
+```
+
+Another question is, "How can I do error handling?" This is important for production applications which must adapt to and record errors. We can use another high-order-program `errorProgram` to trap program errors:
+
+```js
+function errorProgram (program, errorView) {
+  const [programModel, programEffect] = program.init
+  const init = [
+    { hasError: false, error: null, programModel },
+    programEffect
+  ]
+
+  function update (msg, model) {
+    let change
+    try {
+      change = program.update(msg, model.programModel)
+    } catch (error) {
+      return [{ ...model, hasError: true, error }]
+    }
+
+    const [programModel, programEffect] = change
+    return [{ ...model, programModel }), programEffect]
+  }
+
+  function view (model, dispatch) {
+    return model.hasError
+      ? errorView({ error: model.error })
+      : program.view(model.programModel, dispatch)
+  }
+
+  let done
+  if (program.done) {
+    done = function (model) {
+      return program.done(model.programModel)
+    }
+  }
+
+  return { init, update, view, done }
+}
+```
+
+We can catch errors that happen in the `update()` of all programs within `errorProgram` and display an error view based on the thrown error. Error recording is not demonstrated, but follows the same composition pattern. Also note that `errorProgram` is view-library independent.
+
+The pinnacle byproduct of this highly testable architecture is the ecosystem [`raj-web-debugger`](https://github.com/andrejewski/raj-web-debugger). Leveraging the program pattern, we get a time traveling debugger for free. We record every state in our application and pause, play, rewind, and fast-forward them at will while developing. In two line changes, the debugger HOP can wrap any Raj program:
+
+```diff
+import { program } from 'raj/runtime'
+import { myProgram } from './my-app'
++ import debug from 'raj-web-debugger'
+
+- program(myProgram)
++ program(debug(myProgram))
+```
 
 ## 6. Elm Street
 Raj adapts the Elm Architecture for JavaScript. Trying [Elm](http://elm-lang.org/) is highly recommended and Raj serves to bring its architecture to JavaScript until Elm is ready for JavaScript's much wider community.
