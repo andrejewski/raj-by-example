@@ -60,9 +60,9 @@ This program is simple but highlights more than the previous program. Note:
 At this point, we have not introduced Raj. These programs defined above are plain objects and certainly cannot call themselves. To get these programs to *run* we need some sort of *run*-time. Raj is a runtime.
 
 ```js
-import {program} from 'raj/runtime'
+import { runtime } from 'raj'
 
-program({
+runtime({
   init: [0], // State is an integer to count
   update (message, state) {
     return [state + 1] // Increment the state
@@ -333,20 +333,23 @@ export default {
 When the program runs, the subscription `effect` gets called, the "beep" message hits `update` and the `cancel` gets called. The result is that the "beep" message happens once.
 
 ### 3.2. Die Hard
-Since we are on the topic of death, let us talk about the death of runtimes. Like effects that we want to stop, we also want to stop a Raj runtime in some cases. For example, in `raj-react` when our `<Program />` leaves the page we should stop the runtime. Doing so makes us memory safe and garbage collectable.
+Since we are on the topic of death, let us talk about the death of runtimes.
+Like effects that we want to stop, we also want to stop a Raj runtime in some cases.
+For example, in `raj-react` when our `<Program />` leaves the page we should stop the runtime.
+Doing so makes us memory safe and garbage collectable.
 
-The `raj-react` component kills the runtime itself, but if you were looking to kill a normal Raj runtime, you would do:
+The `raj-react` component ends the runtime itself, but if you were looking to end a normal Raj runtime, you would do:
 
 ```js
-import {program} from 'raj/runtime'
+import { runtime } from 'raj'
 
-const killProgram = program({
+const endRuntime = runtime({
   init: [],
   update: () => [],
   view () {}
 })
 
-killProgram() // the runtime has stopped
+endRuntime() // the runtime has stopped
 ```
 
 We have a problem here. What if the program had an active subscription and the runtime died? The subscription would run forever and never cancel. To handle this, we have to introduce the purposefully neglected up to this point optional program method `done`.
@@ -408,7 +411,7 @@ export default {
 }
 ```
 
-Now we know everything there is to know about the Raj runtime. Having gone through these examples, we can now comprehend the [source code of the runtime](https://github.com/andrejewski/raj/blob/master/runtime.js).
+Now we know everything there is to know about the Raj runtime.
 
 ## 4. Big Picture
 
@@ -771,13 +774,13 @@ This `tapProgram` is a high-order-program (HOP), a function which accepts a Raj 
 ```js
 import { tapProgram } from './above-snippet'
 import { myProgram } from './my-app'
-import { program } from 'raj/runtime'
+import { runtime } from 'raj'
 
 const newProgram = tapProgram(myProgram, state => {
   window.app = state
 })
 
-program(newProgram)
+runtime(newProgram)
 ```
 
 Another question is, "How can I do error handling?" This is important for production applications which must adapt to and record errors. We can use another high-order-program `errorProgram` to trap program errors:
@@ -824,12 +827,12 @@ We can catch errors that happen in the `update()` of all programs within `errorP
 The pinnacle byproduct of this highly testable architecture is the ecosystem [`raj-web-debugger`](https://github.com/andrejewski/raj-web-debugger). Leveraging the program pattern, we get a time traveling debugger for free. We record every state in our application and pause, play, rewind, and fast-forward them at will while developing. In two line changes, the debugger HOP can wrap any Raj program:
 
 ```diff
-import { program } from 'raj/runtime'
+import { runtime } from 'raj'
 import { myProgram } from './my-app'
 + import debug from 'raj-web-debugger'
 
-- program(myProgram)
-+ program(debug(myProgram))
+- runtime(myProgram)
++ runtime(debug(myProgram))
 ```
 
 ## 6. Elm Street

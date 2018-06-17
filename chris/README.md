@@ -8,6 +8,8 @@ This guide demonstrates my day-to-day use of Raj and the pieces of the ecosystem
 Consider the main guide as a source of truth with advice much more proven and applicable.
 Consider this guide to be an articulation of my personal preferences.
 
+**Important:** There is a full Raj application [Raj+React RealWorld](https://github.com/andrejewski/raj-react-realworld/) that further exemplifies the below guide.
+
 ## Contents
 
 1. [Ecosystem tools](#1-ecosystem-tools)
